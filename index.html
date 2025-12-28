@@ -3,155 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match Stats Pro - Ultimate Unified UI</title>
+    <title>Match Stats Pro - Full Unified Version</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { background: #111; color: white; font-family: sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* キャプチャエリア：432x576(3:4) */
+        body { background: #111; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .ui-panel { width: 100%; max-width: 432px; background: #222; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
+        textarea { width: 100%; height: 60px; background: #333; color: #fff; border: 1px solid #444; font-size: 11px; margin-bottom: 10px; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; }
+        .btn-info { background: #007AFF; } .btn-member { background: #5856D6; } .btn-cap { background: #34c759; grid-column: span 2; margin-top: 5px; }
+
         #capture-area { 
             width: 432px; height: 576px; background: #000; 
             display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative;
         }
-
-        /* 詳細セクション：下部エリア */
-        .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; flex: 1; border-top: 1px solid #222; }
-        .detail-title { font-size: 8px; color: #007AFF; font-weight: bold; margin: 8px 0 3px 0; letter-spacing: 0.5px; }
-
-        /* 各行の高さ設定 */
-        .slot { height: 17px; display: flex; align-items: center; width: 100%; margin-bottom: 2px; overflow: hidden; }
-
-        /* 統一された選手名：ベース13px、太字 */
-        .p-name-unified { 
-            flex: 1; 
-            text-align: center; 
-            font-size: 13px; 
-            font-weight: bold; 
-            color: #fff; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            min-width: 0; /* フレックスアイテムのはみ出し防止 */
-        }
         
-        /* 時間ラベル */
-        .time-label { width: 18px; color: #fff; font-size: 7.5px; text-align: right; opacity: 0.8; flex-shrink: 0; }
-        .sub-time-label { text-align: left; width: 14px; }
+        /* Header */
+        .header { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
+        .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
+        .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+        #hn { text-align: right; padding-right: 5px; } #an { text-align: left; padding-left: 5px; }
+        .score-n { font-size: 32px; font-weight: 700; text-align: center; }
+        #vi { font-size: 11px; color: #888; margin-top: 4px; height: 14px; overflow: hidden; white-space: pre; }
 
-        /* 交代エリアの構造（OUT → IN） */
+        /* Main Grid */
+        .grid { display: grid; grid-template-columns: 155px 92px 155px; gap: 0px; margin-top: 4px; justify-content: center; }
+        .p-row { height: 16.5px; display: flex; align-items: center; background: #000; padding: 0 2px; }
+        .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; flex-shrink: 0; }
+        .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; flex-shrink: 0; }
+        .p-name { flex: 1; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; overflow: hidden; }
+
+        /* Stats */
+        .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
+        .s-label { font-size: 5.6px; color: #555; text-align: center; }
+        .s-vals { display: flex; justify-content: space-around; font-size: 10px; }
+
+        /* Bottom Section - 13px Unified */
+        .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; flex: 1; border-top: 1px solid #222; padding-top: 6px; }
+        .detail-title { font-size: 7px; color: #007AFF; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
+        .slot-list { display: flex; flex-direction: column; gap: 2px; }
+        .slot { height: 17px; display: flex; align-items: center; width: 100%; }
+
+        /* 統一選手名スタイル */
+        .p-name-unified { flex: 1; text-align: center; font-size: 13px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; min-width: 0; }
+        
+        .time-label { width: 20px; color: #fff; font-size: 7.5px; text-align: right; opacity: 0.8; flex-shrink: 0; }
+        .sub-time-label { text-align: left; width: 15px; }
+
         .sub-names { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0px; overflow: hidden; }
         .arrow { width: 10px; font-size: 8px; color: #fff; opacity: 0.5; text-align: center; flex-shrink: 0; }
 
-        /* 警告・退場のカード箱 */
-        .c-box { width: 7px; height: 10px; background: #444; margin: 0 3px; flex-shrink: 0; border-radius: 1px; }
+        .c-box { width: 7px; height: 10px; background: #444; margin: 0 3px; flex-shrink: 0; border-radius: 1px; cursor: pointer; }
         .c-box.yellow { background: #FFD700; }
         .c-box.red { background: #FF3B30; }
 
-        /* 操作用パネル */
-        .ui-panel { width: 100%; max-width: 432px; background: #222; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; }
+        .ctrls { display: flex; gap: 1px; flex-shrink: 0; align-items: center; }
+        .m-btn { background: #222; color: #555; border: none; font-size: 6px; padding: 1px 2px; cursor: pointer; border-radius: 2px; }
         #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
     <div class="ui-panel">
-        <button onclick="init()">全項目 13px 統一でリセット</button>
-        <button onclick="takePhoto()" style="background:#007AFF;">画像として書き出し</button>
+        <textarea id="it" placeholder="データを貼り付け"></textarea>
+        <div class="btn-grid">
+            <button class="btn-info" onclick="parseStats()">① 試合・スタッツ解析</button>
+            <button class="btn-member" onclick="parseMember()">② メンバー解析</button>
+            <button class="btn-cap" onclick="takePhoto()">画像出力</button>
+        </div>
     </div>
 
     <div id="capture-area">
+        <div class="header">
+            <div class="score-row">
+                <div id="hn" class="team-n" contenteditable="true" oninput="autoShrink(this, 155, 20)">HOME</div>
+                <div id="sc" class="score-n" contenteditable="true" oninput="autoShrink(this, 85, 32)">0-0</div>
+                <div id="an" class="team-n" contenteditable="true" oninput="autoShrink(this, 155, 20)">AWAY</div>
+            </div>
+            <div id="vi" contenteditable="true" oninput="autoShrink(this, 400, 11)">日付 / 会場 / 観客数</div>
+        </div>
+
+        <div class="grid">
+            <div id="hl" class="p-list"></div>
+            <div id="sl" class="s-box"></div>
+            <div id="al" class="p-list"></div>
+        </div>
+
         <div class="detail-section">
             <div class="side-col">
-                <div class="detail-title">GOALS</div>
-                <div id="hg-list"></div>
-                <div class="detail-title">SUBSTITUTIONS</div>
-                <div id="hs-list"></div>
-                <div class="detail-title">CARDS</div>
-                <div id="hc-list"></div>
+                <div class="detail-title">GOALS</div><div id="hg-list" class="slot-list"></div>
+                <div class="detail-title">SUBSTITUTIONS</div><div id="hs-list" class="slot-list"></div>
+                <div class="detail-title">CARDS</div><div id="hc-list" class="slot-list"></div>
             </div>
             <div class="side-col">
-                <div class="detail-title">GOALS</div>
-                <div id="ag-list"></div>
-                <div class="detail-title">SUBSTITUTIONS</div>
-                <div id="as-list"></div>
-                <div class="detail-title">CARDS</div>
-                <div id="ac-list"></div>
+                <div class="detail-title">GOALS</div><div id="ag-list" class="slot-list"></div>
+                <div class="detail-title">SUBSTITUTIONS</div><div id="as-list" class="slot-list"></div>
+                <div class="detail-title">CARDS</div><div id="ac-list" class="slot-list"></div>
             </div>
         </div>
     </div>
     <div id="res"></div>
 
 <script>
-/**
- * どんなに長い名前でも枠内にねじ込むロジック
- * @param {HTMLElement} el - 対象のエレメント
- * @param {number} maxW - 許容される最大幅(px)
- */
+const STATS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
+const POS_L = ["GK", "DF", "MF", "FW"];
+
+function autoShrink(el, maxW, baseSize) {
+    let size = baseSize; el.style.fontSize = size + "px";
+    while (el.scrollWidth > maxW && size > 5) { size -= 0.2; el.style.fontSize = size + "px"; }
+}
+
+// 詳細欄専用：13px統一＆はみ出し絶対防止ロジック
 function unifiedShrink(el, maxW) {
-    let size = 13; // ベースサイズ13px
+    let size = 13;
     el.style.fontSize = size + "px";
     el.style.letterSpacing = "0px";
-    
-    // 1. まずは文字間隔を限界まで詰めて粘る
-    if (el.scrollWidth > maxW) {
-        el.style.letterSpacing = "-1.2px"; 
-    }
-    
-    // 2. それでもはみ出るなら、枠内に収まるまでサイズを下げ続ける
-    // (最小リミットを撤廃し、物理的にはみ出るのを防止)
-    while (el.scrollWidth > maxW && size > 4) {
-        size -= 0.2;
-        el.style.fontSize = size + "px";
-    }
+    if (el.scrollWidth > maxW) { el.style.letterSpacing = "-1.2px"; }
+    while (el.scrollWidth > maxW && size > 4) { size -= 0.2; el.style.fontSize = size + "px"; }
 }
 
 function init() {
+    let sH = STATS.map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('');
+    sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`;
+    document.getElementById('sl').innerHTML = sH;
+
+    const pRow = `<div class="p-row"><span class="p-pos" onclick="this.innerText=POS_L[(POS_L.indexOf(this.innerText)+1)%4]">GK</span><span class="p-no" contenteditable="true"></span><span class="p-name" contenteditable="true" oninput="autoShrink(this, 110, 10.5)"></span><div class="ctrls"><button class="m-btn" onclick="this.closest('.p-row').remove()">×</button></div></div>`;
+    document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
+    document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
+    
     ['h', 'a'].forEach(s => {
-        // GOALS (最大幅 約175px)
-        document.getElementById(`${s}g-list`).innerHTML = Array(4).fill(0).map(() => `
-            <div class="slot">
-                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 175)">選手名</div>
-                <div class="time-label" contenteditable="true">90'</div>
-            </div>`).join('');
-
-        // SUBSTITUTIONS (片方の名前 最大幅 約88px)
-        document.getElementById(`${s}s-list`).innerHTML = Array(5).fill(0).map(() => `
-            <div class="slot">
-                <div class="time-label sub-time-label" contenteditable="true">90'</div>
-                <div class="sub-names">
-                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)">OUT</div>
-                    <span class="arrow">→</span>
-                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)">IN</div>
-                </div>
-            </div>`).join('');
-
-        // CARDS (最大幅 約160px)
-        document.getElementById(`${s}c-list`).innerHTML = Array(3).fill(0).map(() => `
-            <div class="slot">
-                <div class="time-label sub-time-label" contenteditable="true">90'</div>
-                <div class="c-box" onclick="this.classList.toggle('yellow')||this.classList.toggle('red')"></div>
-                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 160)">選手名</div>
-            </div>`).join('');
+        document.getElementById(`${s}g-list`).innerHTML = Array(4).fill(0).map(() => `<div class="slot"><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 175)"></div><div class="time-label" contenteditable="true"></div></div>`).join('');
+        document.getElementById(`${s}s-list`).innerHTML = Array(5).fill(0).map(() => `<div class="slot"><div class="time-label sub-time-label" contenteditable="true"></div><div class="sub-names"><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div><span class="arrow">→</span><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(3).fill(0).map(() => `<div class="slot"><div class="time-label sub-time-label" contenteditable="true"></div><div class="c-box" onclick="this.classList.toggle('yellow')||this.classList.toggle('red')"></div><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 160)"></div></div>`).join('');
     });
+}
+
+function parseStats() {
+    const it = document.getElementById('it').value;
+    const scM = it.match(/(\d+)\s*-\s*(\d+)/);
+    if(scM) { document.getElementById('sc').innerText = scM[0]; }
+}
+
+function parseMember() {
+    const tokens = document.getElementById('it').value.split(/\s+/).filter(t => t);
+    const names = tokens.filter(t => isNaN(t) && t.length > 1);
+    const update = (id) => {
+        const rows = document.getElementById(id).children;
+        for(let i=0; i<rows.length; i++) {
+            const n = rows[i].querySelector('.p-name');
+            if(n && names.length) { n.innerText = names.shift(); autoShrink(n, 110, 10.5); }
+        }
+    };
+    update('hl'); update('al');
 }
 
 function takePhoto() {
-    const area = document.getElementById('capture-area');
-    html2canvas(area, { 
-        scale: 3, 
-        backgroundColor: '#000',
-        logging: false 
-    }).then(c => {
+    document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
+    html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: '#000' }).then(c => {
+        document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
-        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin-bottom:5px;">【生成完了】画像を保存してください</p>';
-        const img = new Image();
-        img.src = c.toDataURL();
-        img.style.width = "432px";
+        res.innerHTML = '';
+        const img = new Image(); img.src = c.toDataURL(); img.style.width = "432px";
         res.appendChild(img);
     });
 }
-
-// 起動時に初期化
 init();
 </script>
 </body>
