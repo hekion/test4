@@ -3,43 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match Stats Pro - 13px Balanced</title>
+    <title>Match Stats Pro - Ultimate Unified UI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body { background: #111; color: white; font-family: sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        #capture-area { width: 432px; height: 576px; background: #000; display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; }
+        
+        /* キャプチャエリア：432x576(3:4) */
+        #capture-area { 
+            width: 432px; height: 576px; background: #000; 
+            display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative;
+        }
 
+        /* 詳細セクション：下部エリア */
         .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; flex: 1; border-top: 1px solid #222; }
-        .slot { height: 17px; display: flex; align-items: center; width: 100%; margin-bottom: 2px; }
-
-        /* 得点者：13.5px */
-        .g-name { flex: 1; text-align: center; font-size: 13.5px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; }
-        .g-time { width: 22px; color: #fff; font-size: 7.5px; text-align: right; opacity: 0.8; }
-
-        /* 交代選手：ご要望の 13px */
-        .sub-names { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0px; overflow: hidden; }
-        .sub-p { flex: 1; font-size: 13px; font-weight: bold; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; }
-        .arrow { width: 10px; font-size: 8px; color: #fff; opacity: 0.6; text-align: center; flex-shrink: 0; }
-        .sub-time { width: 16px; font-size: 7.5px; color: #fff; opacity: 0.8; flex-shrink: 0; }
-
-        /* カード欄：12.5px */
-        .c-box { width: 7px; height: 10px; background: #444; margin: 0 3px; flex-shrink: 0; }
-        .c-box.yellow { background: #FFD700; }
-        .c-box.red { background: #FF3B30; }
-        .c-name { flex: 1; text-align: center; font-size: 12.5px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; }
-
         .detail-title { font-size: 8px; color: #007AFF; font-weight: bold; margin: 8px 0 3px 0; letter-spacing: 0.5px; }
 
-        /* UI Panel */
+        /* 各行の高さ設定 */
+        .slot { height: 17px; display: flex; align-items: center; width: 100%; margin-bottom: 2px; overflow: hidden; }
+
+        /* 統一された選手名：ベース13px、太字 */
+        .p-name-unified { 
+            flex: 1; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #fff; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            min-width: 0; /* フレックスアイテムのはみ出し防止 */
+        }
+        
+        /* 時間ラベル */
+        .time-label { width: 18px; color: #fff; font-size: 7.5px; text-align: right; opacity: 0.8; flex-shrink: 0; }
+        .sub-time-label { text-align: left; width: 14px; }
+
+        /* 交代エリアの構造（OUT → IN） */
+        .sub-names { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0px; overflow: hidden; }
+        .arrow { width: 10px; font-size: 8px; color: #fff; opacity: 0.5; text-align: center; flex-shrink: 0; }
+
+        /* 警告・退場のカード箱 */
+        .c-box { width: 7px; height: 10px; background: #444; margin: 0 3px; flex-shrink: 0; border-radius: 1px; }
+        .c-box.yellow { background: #FFD700; }
+        .c-box.red { background: #FF3B30; }
+
+        /* 操作用パネル */
         .ui-panel { width: 100%; max-width: 432px; background: #222; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #34c759; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; cursor: pointer; }
+        #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
     <div class="ui-panel">
-        <button onclick="init()">表を更新（名前13px固定）</button>
-        <button onclick="takePhoto()" style="background:#007AFF;">画像として保存</button>
+        <button onclick="init()">全項目 13px 統一でリセット</button>
+        <button onclick="takePhoto()" style="background:#007AFF;">画像として書き出し</button>
     </div>
 
     <div id="capture-area">
@@ -65,61 +82,76 @@
     <div id="res"></div>
 
 <script>
-// 文字が極端に小さくなるのを防ぐロジック
-function strictShrink(el, maxW, baseSize) {
-    let size = baseSize;
+/**
+ * どんなに長い名前でも枠内にねじ込むロジック
+ * @param {HTMLElement} el - 対象のエレメント
+ * @param {number} maxW - 許容される最大幅(px)
+ */
+function unifiedShrink(el, maxW) {
+    let size = 13; // ベースサイズ13px
     el.style.fontSize = size + "px";
     el.style.letterSpacing = "0px";
     
-    // 12pxまではサイズを維持し、文字間を詰めて対応
+    // 1. まずは文字間隔を限界まで詰めて粘る
     if (el.scrollWidth > maxW) {
-        el.style.letterSpacing = "-0.5px";
+        el.style.letterSpacing = "-1.2px"; 
     }
-    // それでもはみ出る場合のみ12pxまで下げる
-    while (el.scrollWidth > maxW && size > 12) {
-        size -= 0.1;
+    
+    // 2. それでもはみ出るなら、枠内に収まるまでサイズを下げ続ける
+    // (最小リミットを撤廃し、物理的にはみ出るのを防止)
+    while (el.scrollWidth > maxW && size > 4) {
+        size -= 0.2;
         el.style.fontSize = size + "px";
     }
 }
 
 function init() {
     ['h', 'a'].forEach(s => {
-        // GOALS
+        // GOALS (最大幅 約175px)
         document.getElementById(`${s}g-list`).innerHTML = Array(4).fill(0).map(() => `
             <div class="slot">
-                <div class="g-name" contenteditable="true" oninput="strictShrink(this, 175, 13.5)">名前</div>
-                <div class="g-time" contenteditable="true">90'</div>
+                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 175)">選手名</div>
+                <div class="time-label" contenteditable="true">90'</div>
             </div>`).join('');
 
-        // SUBS (13px)
+        // SUBSTITUTIONS (片方の名前 最大幅 約88px)
         document.getElementById(`${s}s-list`).innerHTML = Array(5).fill(0).map(() => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true">90'</div>
+                <div class="time-label sub-time-label" contenteditable="true">90'</div>
                 <div class="sub-names">
-                    <div class="sub-p" contenteditable="true" oninput="strictShrink(this, 88, 13)">OUT</div>
+                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)">OUT</div>
                     <span class="arrow">→</span>
-                    <div class="sub-p" contenteditable="true" oninput="strictShrink(this, 88, 13)">IN</div>
+                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)">IN</div>
                 </div>
             </div>`).join('');
 
-        // CARDS (12.5px)
+        // CARDS (最大幅 約160px)
         document.getElementById(`${s}c-list`).innerHTML = Array(3).fill(0).map(() => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true">90'</div>
+                <div class="time-label sub-time-label" contenteditable="true">90'</div>
                 <div class="c-box" onclick="this.classList.toggle('yellow')||this.classList.toggle('red')"></div>
-                <div class="c-name" contenteditable="true" oninput="strictShrink(this, 160, 12.5)">名前</div>
+                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 160)">選手名</div>
             </div>`).join('');
     });
 }
 
 function takePhoto() {
-    html2canvas(document.getElementById('capture-area'), { scale: 3 }).then(c => {
+    const area = document.getElementById('capture-area');
+    html2canvas(area, { 
+        scale: 3, 
+        backgroundColor: '#000',
+        logging: false 
+    }).then(c => {
         const res = document.getElementById('res');
-        res.innerHTML = '<p style="font-size:10px;color:#34c759;">生成完了</p>';
-        const img = new Image(); img.src = c.toDataURL(); img.style.width = "432px";
+        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin-bottom:5px;">【生成完了】画像を保存してください</p>';
+        const img = new Image();
+        img.src = c.toDataURL();
+        img.style.width = "432px";
         res.appendChild(img);
     });
 }
+
+// 起動時に初期化
 init();
 </script>
 </body>
