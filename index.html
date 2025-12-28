@@ -3,79 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match Stats Pro - Full Power Edition</title>
+    <title>Match Stats Pro - Final Fixed Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { background: #111; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        body { background: #111; color: white; font-family: sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .ui-panel { width: 100%; max-width: 432px; background: #222; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
-        textarea { width: 100%; height: 80px; background: #333; color: #fff; border: 1px solid #444; font-size: 11px; margin-bottom: 10px; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; resize: vertical; }
+        textarea { width: 100%; height: 60px; background: #333; color: #fff; border: 1px solid #444; font-size: 11px; margin-bottom: 10px; padding: 8px; border-radius: 6px; box-sizing: border-box; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; transition: opacity 0.2s; }
-        button:active { opacity: 0.7; }
+        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; }
         .btn-info { background: #007AFF; } .btn-member { background: #5856D6; } .btn-cap { background: #34c759; grid-column: span 2; margin-top: 5px; }
 
-        #capture-area { 
-            width: 432px; height: 576px; background: #000; 
-            display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative;
-            overflow: hidden;
-        }
+        #capture-area { width: 432px; height: 576px; background: #000; display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative; overflow: hidden; }
         
-        /* --- HEADER SECTION --- */
         .header { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
         .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; }
-        #hn { text-align: right; padding-right: 5px; } #an { text-align: left; padding-left: 5px; }
-        .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; }
-        #vi { font-size: 11px; color: #888; font-weight: 500; white-space: pre; height: 14px; overflow: hidden; margin-top: 4px; letter-spacing: -0.02em; }
+        .score-n { font-size: 32px; font-weight: 700; text-align: center; }
+        #vi { font-size: 11px; color: #888; margin-top: 4px; height: 14px; overflow: hidden; }
 
-        /* --- MIDDLE GRID SECTION --- */
         .grid { display: grid; grid-template-columns: 155px 92px 155px; gap: 0px; margin-top: 4px; justify-content: center; }
-        .p-list { display: flex; flex-direction: column; }
-        .p-row { height: 16.5px; display: flex; align-items: center; background: #000; padding: 0 2px; position: relative; }
-        .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; flex-shrink: 0; }
+        .p-row { height: 16.5px; display: flex; align-items: center; background: #000; padding: 0 2px; }
+        .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; flex-shrink: 0; cursor: pointer; }
         .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; flex-shrink: 0; }
-        .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
-        .p-name { font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; }
+        .p-name { flex: 1; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; overflow: hidden; }
 
-        /* Stats in Center */
-        .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; border-bottom: 1px solid #111; }
-        .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
-        .s-vals { display: flex; justify-content: space-around; width: 100%; font-size: 10px; font-weight: 400; line-height: 1; }
+        .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
+        .s-label { font-size: 5.6px; color: #555; text-align: center; }
+        .s-vals { display: flex; justify-content: space-around; font-size: 10px; position: relative; }
+        .sl-card { width: 4px; height: 6px; border-radius: 1px; position: absolute; top: 2px; }
+        .sl-card.yellow { background: #FFD700; } .sl-card.red { background: #FF3B30; }
 
-        /* --- BOTTOM DETAIL SECTION --- */
-        .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; flex: 1; border-top: 1px solid #222; padding-top: 4px; min-height: 0; }
-        .detail-title { font-size: 7px; color: #007AFF; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.5px; }
-        .slot-list { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+        .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; flex: 1; border-top: 1px solid #222; padding-top: 4px; }
+        .detail-title { font-size: 7px; color: #007AFF; font-weight: 700; margin-bottom: 2px; }
         
+        .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .slot-list { display: flex; flex-direction: column; gap: 1px; }
         .slot { height: 17px; display: flex; align-items: center; width: 100%; overflow: hidden; }
-        
-        /* 統一選手名スタイル (13px) */
+
         .p-name-unified { flex: 1; text-align: center; font-size: 13px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; min-width: 0; }
-        
-        .time-label { width: 22px; color: #fff; opacity: 0.8; font-size: 7.5px; text-align: right; flex-shrink: 0; margin-left: 2px; }
-        .sub-time-label { text-align: left; width: 15px; margin-left: 0; margin-right: 2px; }
-
+        .time-label { width: 18px; color: #fff; font-size: 7px; text-align: right; opacity: 0.8; flex-shrink: 0; }
         .sub-names { flex: 1; display: flex; align-items: center; gap: 0px; overflow: hidden; justify-content: center; }
-        .arrow { font-size: 8px; color: #fff; opacity: 0.5; flex-shrink: 0; width: 10px; text-align: center; }
+        .arrow { width: 8px; font-size: 8px; color: #fff; opacity: 0.5; text-align: center; flex-shrink: 0; }
 
-        .c-box { width: 7px; height: 10px; border-radius: 1px; background: #444; margin: 0 3px; cursor: pointer; flex-shrink: 0; }
-        .c-box.yellow { background: #FFD700; }
-        .c-box.red { background: #FF3B30; }
+        .c-box { width: 7px; height: 10px; background: #444; margin: 0 3px; flex-shrink: 0; border-radius: 1px; cursor: pointer; }
+        .c-box.yellow { background: #FFD700; } .c-box.red { background: #FF3B30; }
 
-        /* Helper Controls */
-        .ctrls { display: flex; gap: 1px; flex-shrink: 0; height: 100%; align-items: center; background: rgba(0,0,0,0.5); }
-        .m-btn { background: #222; color: #888; border: none; font-size: 7px; padding: 1px 3px; cursor: pointer; border-radius: 2px; }
-        #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .ctrls { display: flex; gap: 1px; align-items: center; }
+        .m-btn { background: #222; color: #555; border: none; font-size: 7px; cursor: pointer; }
+        #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
     <div class="ui-panel">
-        <textarea id="it" placeholder="公式速報等のテキストを貼り付けてください..."></textarea>
+        <textarea id="it" placeholder="公式テキストを貼り付け"></textarea>
         <div class="btn-grid">
             <button class="btn-info" onclick="parseStats()">① 試合・スタッツ解析</button>
             <button class="btn-member" onclick="parseMember()">② メンバー解析</button>
-            <button class="btn-cap" onclick="takePhoto()">画像出力 (1536x2048)</button>
+            <button class="btn-cap" onclick="takePhoto()">画像出力</button>
         </div>
     </div>
 
@@ -86,7 +71,7 @@
                 <div id="sc" class="score-n" contenteditable="true" oninput="autoShrink(this, 85, 32)">0-0</div>
                 <div id="an" class="team-n" contenteditable="true" oninput="autoShrink(this, 155, 20)">AWAY</div>
             </div>
-            <div id="vi" contenteditable="true" oninput="autoShrink(this, 400, 11)">2024.01.01 / 〇〇スタジアム / 10,000人</div>
+            <div id="vi" contenteditable="true" oninput="autoShrink(this, 400, 11)">日付 / 会場 / 観客数</div>
         </div>
 
         <div class="grid">
@@ -97,121 +82,81 @@
 
         <div class="detail-section">
             <div class="side-col">
-                <div class="detail-title">GOALS</div><div id="hg-list" class="slot-list"></div>
-                <div class="detail-title" style="margin-top:4px;">SUBSTITUTIONS</div><div id="hs-list" class="slot-list"></div>
-                <div class="detail-title" style="margin-top:4px;">CARDS</div><div id="hc-list" class="slot-list"></div>
+                <div class="detail-title">GOALS</div>
+                <div id="hg-list" class="goals-grid"></div>
+                <div class="detail-title" style="margin-top:4px;">SUBSTITUTIONS</div>
+                <div id="hs-list" class="slot-list"></div>
+                <div class="detail-title" style="margin-top:4px;">CARDS</div>
+                <div id="hc-list" class="slot-list"></div>
             </div>
             <div class="side-col">
-                <div class="detail-title">GOALS</div><div id="ag-list" class="slot-list"></div>
-                <div class="detail-title" style="margin-top:4px;">SUBSTITUTIONS</div><div id="as-list" class="slot-list"></div>
-                <div class="detail-title" style="margin-top:4px;">CARDS</div><div id="ac-list" class="slot-list"></div>
+                <div class="detail-title">GOALS</div>
+                <div id="ag-list" class="goals-grid"></div>
+                <div class="detail-title" style="margin-top:4px;">SUBSTITUTIONS</div>
+                <div id="as-list" class="slot-list"></div>
+                <div class="detail-title" style="margin-top:4px;">CARDS</div>
+                <div id="ac-list" class="slot-list"></div>
             </div>
         </div>
     </div>
     <div id="res"></div>
 
 <script>
-const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
-const POS_LIST = ["GK", "DF", "MF", "FW"];
+const STATS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
+const POS_L = ["GK", "DF", "MF", "FW"];
 
-// 標準的な自動縮小
 function autoShrink(el, maxW, baseSize) {
     let size = baseSize; el.style.fontSize = size + "px";
     while (el.scrollWidth > maxW && size > 5) { size -= 0.2; el.style.fontSize = size + "px"; }
 }
 
-// 選手名専用：13px統一＆超長い名前(ファンウェルメスケルケン等)対策
 function unifiedShrink(el, maxW) {
-    let size = 13;
-    el.style.fontSize = size + "px";
-    el.style.letterSpacing = "0px";
-    if (el.scrollWidth > maxW) { el.style.letterSpacing = "-1.2px"; } // 最初に文字間を詰めて粘る
+    let size = 13; el.style.fontSize = size + "px"; el.style.letterSpacing = "0px";
+    if (el.scrollWidth > maxW) { el.style.letterSpacing = "-1.2px"; }
     while (el.scrollWidth > maxW && size > 4) { size -= 0.2; el.style.fontSize = size + "px"; }
 }
 
 function init() {
-    // スタッツ初期化
-    let sHtml = STATS_LABELS.map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('');
-    sHtml += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`;
-    document.getElementById('sl').innerHTML = sHtml;
+    let sH = STATS.map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('');
+    sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals">
+        <div class="sl-card yellow" style="left:15%"></div><span contenteditable="true">0</span>
+        <div class="sl-card red" style="right:15%"></div><span contenteditable="true">0</span>
+    </div></div>`;
+    document.getElementById('sl').innerHTML = sH;
 
-    // 選手リスト初期化 (11名)
-    const pRow = `
-        <div class="p-row">
-            <span class="p-pos" onclick="togglePos(this)">GK</span>
-            <span class="p-no" contenteditable="true">0</span>
-            <div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 100, 10.5)">選手名</span></div>
-            <div class="ctrls"><button class="m-btn" onclick="this.closest('.p-row').remove()">×</button></div>
-        </div>`;
+    const pRow = `<div class="p-row"><span class="p-pos" onclick="this.innerText=POS_L[(POS_L.indexOf(this.innerText)+1)%4]">GK</span><span class="p-no" contenteditable="true">0</span><span class="p-name" contenteditable="true" oninput="autoShrink(this, 100, 10.5)">選手名</span><div class="ctrls"><button class="m-btn" onclick="this.closest('.p-row').remove()">×</button></div></div>`;
     document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
     
-    // 詳細欄初期化 (得点10, 交代6, カード6)
-    ['h', 'a'].forEach(side => {
-        document.getElementById(`${side}g-list`).innerHTML = Array(10).fill(0).map(() => `
-            <div class="slot">
-                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 175)"></div>
-                <div class="time-label" contenteditable="true"></div>
-            </div>`).join('');
-        document.getElementById(`${side}s-list`).innerHTML = Array(6).fill(0).map(() => `
-            <div class="slot">
-                <div class="time-label sub-time-label" contenteditable="true"></div>
-                <div class="sub-names">
-                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div>
-                    <span class="arrow">→</span>
-                    <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div>
-                </div>
-            </div>`).join('');
-        document.getElementById(`${side}c-list`).innerHTML = Array(6).fill(0).map(() => `
-            <div class="slot">
-                <div class="time-label sub-time-label" contenteditable="true"></div>
-                <div class="c-box" onclick="this.classList.toggle('yellow')||this.classList.toggle('red')"></div>
-                <div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 160)"></div>
-            </div>`).join('');
+    ['h', 'a'].forEach(s => {
+        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 75)"></div><div class="time-label" contenteditable="true"></div></div>`).join('');
+        document.getElementById(`${s}s-list`).innerHTML = Array(5).fill(0).map(() => `<div class="slot"><div class="time-label" style="text-align:left;width:15px;" contenteditable="true"></div><div class="sub-names"><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div><span class="arrow">→</span><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 88)"></div></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(3).fill(0).map(() => `<div class="slot"><div class="time-label" style="text-align:left;width:15px;" contenteditable="true"></div><div class="c-box" onclick="this.classList.toggle('yellow')||this.classList.toggle('red')"></div><div class="p-name-unified" contenteditable="true" oninput="unifiedShrink(this, 160)"></div></div>`).join('');
     });
-}
-
-function togglePos(el) {
-    let cur = el.innerText;
-    el.innerText = POS_LIST[(POS_LIST.indexOf(cur) + 1) % 4];
 }
 
 function parseStats() {
     const text = document.getElementById('it').value;
-    // チーム名
-    const teams = text.match(/[A-Z]{2,}/g) || ["HOME", "AWAY"];
-    if(teams.length >= 2) { 
-        document.getElementById('hn').innerText = teams[0]; 
-        document.getElementById('an').innerText = teams[1]; 
-    }
-    // スコア
     const score = text.match(/(\d+)\s*-\s*(\d+)/);
     if(score) { document.getElementById('sc').innerText = score[0]; }
-
-    // スタッツ一括検索(保持率、シュート等)
     const vals = document.querySelectorAll('.s-vals');
-    STATS_LABELS.forEach((label, i) => {
+    STATS.forEach((label, i) => {
         const reg = new RegExp(`${label}\\s*(\\d+%?)\\s*(\\d+%?)`);
         const m = text.match(reg);
-        if(m) {
-            vals[i].children[0].innerText = m[1];
-            vals[i].children[1].innerText = m[2];
-        }
+        if(m) { vals[i].children[0].innerText = m[1]; vals[i].children[1].innerText = m[2]; }
     });
 }
 
 function parseMember() {
     const text = document.getElementById('it').value;
-    const lines = text.split('\n').filter(l => l.trim().length > 0);
-    const names = lines.filter(l => !l.match(/^\d+$/) && l.length > 1 && l.length < 20);
-    
-    const updateSide = (listId) => {
-        const rows = document.getElementById(listId).querySelectorAll('.p-row');
+    const lines = text.split('\n').filter(l => l.trim().length > 1);
+    const updateSide = (id) => {
+        const rows = document.getElementById(id).querySelectorAll('.p-row');
         rows.forEach(row => {
-            if(names.length > 0) {
-                const nameEl = row.querySelector('.p-name');
-                nameEl.innerText = names.shift();
-                autoShrink(nameEl, 100, 10.5);
+            if(lines.length) {
+                const n = row.querySelector('.p-name');
+                n.innerText = lines.shift().replace(/^\d+\s*/, '');
+                autoShrink(n, 100, 10.5);
             }
         });
     };
@@ -219,23 +164,15 @@ function parseMember() {
 }
 
 function takePhoto() {
-    const area = document.getElementById('capture-area');
     document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
-    
-    html2canvas(area, { 
-        scale: 3.55, // 1536px幅への最適化
-        backgroundColor: '#000',
-        useCORS: true
-    }).then(canvas => {
+    html2canvas(document.getElementById('capture-area'), { scale: 3.5, backgroundColor: '#000' }).then(c => {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
-        res.innerHTML = '<p style="color:#34c759;font-size:12px;margin:5px;">【生成完了】画像を長押しして保存</p>';
-        const img = new Image();
-        img.src = canvas.toDataURL("image/png");
+        res.innerHTML = '';
+        const img = new Image(); img.src = c.toDataURL(); img.style.width = "432px";
         res.appendChild(img);
     });
 }
-
 init();
 </script>
 </body>
